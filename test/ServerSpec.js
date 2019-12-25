@@ -11,58 +11,61 @@ var Link = require('../app/models/link');
 // NOTE: these tests are designed for mongo!
 /////////////////////////////////////////////////////
 
-xdescribe('', function() {
+describe('', function () {
 
-  beforeEach(function(done) {
+  beforeEach(function (done) {
     // Log out currently signed in user
     request(app)
       .get('/logout')
-      .end(function(err, res) {
+      .end(function (err, res) {
 
         // Delete objects from db so they can be created later for the test
-        Link.remove({url: 'http://www.roflzoo.com/'}).exec();
-        User.remove({username: 'Savannah'}).exec();
-        User.remove({username: 'Phillip'}).exec();
+        Link.remove({ url: 'http://www.roflzoo.com/' }).exec();
+        User.remove({ username: 'Savannah' }).exec();
+        User.remove({ username: 'Phillip' }).exec();
 
         done();
       });
   });
 
-  describe('Link creation: ', function() {
+  describe('Link creation: ', function () {
 
-    it('Only shortens valid urls, returning a 404 - Not found for invalid urls', function(done) {
+    it('Only shortens valid urls, returning a 404 - Not found for invalid urls', function (done) {
       request(app)
         .post('/links')
         .send({
-          'url': 'definitely not a valid url'})
+          'url': 'definitely not a valid url'
+        })
         .expect(404)
         .end(done);
     });
 
-    describe('Shortening links:', function() {
+    describe('Shortening links:', function () {
 
-      it('Responds with the short code', function(done) {
+      it('Responds with the short code', function (done) {
         request(app)
           .post('/links')
           .send({
-            'url': 'http://www.roflzoo.com/'})
+            'url': 'http://www.roflzoo.com/'
+          })
           .expect(200)
-          .expect(function(res) {
+          .expect(function (res) {
             expect(res.body.url).to.equal('http://www.roflzoo.com/');
             expect(res.body.code).to.be.ok;
           })
           .end(done);
       });
 
-      it('New links create a database entry', function(done) {
+      it('New links create a database entry', function (done) {
         request(app)
           .post('/links')
           .send({
-            'url': 'http://www.roflzoo.com/'})
+            'url': 'http://www.roflzoo.com/'
+          })
           .expect(200)
-          .expect(function(res) {
-            Link.findOne({'url': 'http://www.roflzoo.com/'})
-              .exec(function(err, link) {
+          .expect(function (res) {
+            Link.findOne({ 'url': 'http://www.roflzoo.com/' })
+              .exec(function (err, link) {
                 if (err) { console.log(err); }
                 expect(link.url).to.equal('http://www.roflzoo.com/');
               });
@@ -70,15 +73,16 @@ xdescribe('', function() {
           .end(done);
       });
 
-      it('Fetches the link url title', function(done) {
+      it('Fetches the link url title', function (done) {
         request(app)
           .post('/links')
           .send({
-            'url': 'http://www.roflzoo.com/'})
+            'url': 'http://www.roflzoo.com/'
+          })
           .expect(200)
-          .expect(function(res) {
-            Link.findOne({'url': 'http://www.roflzoo.com/'})
-              .exec(function(err, link) {
+          .expect(function (res) {
+            Link.findOne({ 'url': 'http://www.roflzoo.com/' })
+              .exec(function (err, link) {
                 if (err) { console.log(err); }
                 expect(link.title).to.equal('Funny pictures of animals, funny dog pictures');
               });
@@ -88,9 +92,9 @@ xdescribe('', function() {
 
     }); // 'Shortening Links'
 
-    describe('With previously saved urls: ', function() {
+    describe('With previously saved urls: ', function () {
 
-      beforeEach(function(done) {
+      beforeEach(function (done) {
         link = new Link({
           url: 'http://www.roflzoo.com/',
           title: 'Funny pictures of animals, funny dog pictures',
@@ -98,31 +102,32 @@ xdescribe('', function() {
           visits: 0
         });
 
-        link.save(function() {
+        link.save(function () {
           done();
         });
       });
 
-      it('Returns the same shortened code if attempted to add the same URL twice', function(done) {
+      it('Returns the same shortened code if attempted to add the same URL twice', function (done) {
         var firstCode = link.code;
         request(app)
           .post('/links')
           .send({
-            'url': 'http://www.roflzoo.com/'})
+            'url': 'http://www.roflzoo.com/'
+          })
           .expect(200)
-          .expect(function(res) {
+          .expect(function (res) {
             var secondCode = res.body.code;
             expect(secondCode).to.equal(firstCode);
           })
           .end(done);
       });
 
-      it('Shortcode redirects to correct url', function(done) {
+      it('Shortcode redirects to correct url', function (done) {
         var sha = link.code;
         request(app)
           .get('/' + sha)
           .expect(302)
-          .expect(function(res) {
+          .expect(function (res) {
             var redirect = res.headers.location;
             expect(redirect).to.equal('http://www.roflzoo.com/');
           })
@@ -133,35 +138,35 @@ xdescribe('', function() {
 
   }); // 'Link creation'
 
-  describe('Priviledged Access:', function() {
+  describe('Priviledged Access:', function () {
 
     // /*  Authentication  */
     // // TODO: xit out authentication
-    it('Redirects to login page if a user tries to access the main page and is not signed in', function(done) {
+    it('Redirects to login page if a user tries to access the main page and is not signed in', function (done) {
       request(app)
         .get('/')
         .expect(302)
-        .expect(function(res) {
+        .expect(function (res) {
           expect(res.headers.location).to.equal('/login');
         })
         .end(done);
     });
 
-    it('Redirects to login page if a user tries to create a link and is not signed in', function(done) {
+    it('Redirects to login page if a user tries to create a link and is not signed in', function (done) {
       request(app)
         .get('/create')
         .expect(302)
-        .expect(function(res) {
+        .expect(function (res) {
           expect(res.headers.location).to.equal('/login');
         })
         .end(done);
     });
 
-    it('Redirects to login page if a user tries to see all of the links and is not signed in', function(done) {
+    it('Redirects to login page if a user tries to see all of the links and is not signed in', function (done) {
       request(app)
         .get('/links')
         .expect(302)
-        .expect(function(res) {
+        .expect(function (res) {
           expect(res.headers.location).to.equal('/login');
         })
         .end(done);
@@ -169,32 +174,34 @@ xdescribe('', function() {
 
   }); // 'Privileged Access'
 
-  describe('Account Creation:', function() {
+  describe('Account Creation:', function () {
 
-    it('Signup creates a new user', function(done) {
+    it('Signup creates a new user', function (done) {
       request(app)
         .post('/signup')
         .send({
           'username': 'Svnh',
-          'password': 'Svnh' })
+          'password': 'Svnh'
+        })
         .expect(302)
-        .expect(function() {
-          User.findOne({'username': 'Svnh'})
-            .exec(function(err, user) {
+        .expect(function () {
+          User.findOne({ 'username': 'Svnh' })
+            .exec(function (err, user) {
               expect(user.username).to.equal('Svnh');
             });
         })
         .end(done);
     });
 
-    it('Successful signup logs in a new user', function(done) {
+    it('Successful signup logs in a new user', function (done) {
       request(app)
         .post('/signup')
         .send({
           'username': 'Phillip',
-          'password': 'Phillip' })
+          'password': 'Phillip'
+        })
         .expect(302)
-        .expect(function(res) {
+        .expect(function (res) {
           expect(res.headers.location).to.equal('/');
           request(app)
             .get('/logout')
@@ -205,38 +212,40 @@ xdescribe('', function() {
 
   }); // 'Account Creation'
 
-  describe('Account Login:', function() {
+  describe('Account Login:', function () {
 
-    beforeEach(function(done) {
+    beforeEach(function (done) {
       new User({
         'username': 'Phillip',
         'password': 'Phillip'
-      }).save(function() {
+      }).save(function () {
         done();
       });
     });
 
-    it('Logs in existing users', function(done) {
+    it('Logs in existing users', function (done) {
       request(app)
         .post('/login')
         .send({
           'username': 'Phillip',
-          'password': 'Phillip' })
+          'password': 'Phillip'
+        })
         .expect(302)
-        .expect(function(res) {
+        .expect(function (res) {
           expect(res.headers.location).to.equal('/');
         })
         .end(done);
     });
 
-    it('Users that do not exist are kept on login page', function(done) {
+    it('Users that do not exist are kept on login page', function (done) {
       request(app)
         .post('/login')
         .send({
           'username': 'Fred',
-          'password': 'Fred' })
+          'password': 'Fred'
+        })
         .expect(302)
-        .expect(function(res) {
+        .expect(function (res) {
           expect(res.headers.location).to.equal('/login');
         })
         .end(done);

@@ -1,5 +1,5 @@
 var app = require('./server-config.js');
-
+require('dotenv').config();
 var port = 4568;
 
 app.listen(port);
