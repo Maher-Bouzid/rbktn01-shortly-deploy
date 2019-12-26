@@ -4,6 +4,7 @@ var expect = require('chai').expect;
 var app = require('../server-config.js');
 
 var db = require('../app/config');
+
 var User = require('../app/models/user');
 var Link = require('../app/models/link');
 
@@ -11,41 +12,39 @@ var Link = require('../app/models/link');
 // NOTE: these tests are designed for mongo!
 /////////////////////////////////////////////////////
 
-xdescribe('', function() {
-
+describe('', function() {
   beforeEach(function(done) {
     // Log out currently signed in user
     request(app)
       .get('/logout')
       .end(function(err, res) {
-
         // Delete objects from db so they can be created later for the test
-        Link.remove({url: 'http://www.roflzoo.com/'}).exec();
-        User.remove({username: 'Savannah'}).exec();
-        User.remove({username: 'Phillip'}).exec();
+        Link.remove({ url: 'http://www.roflzoo.com/' }).exec();
+        User.remove({ username: 'Savannah' }).exec();
+        User.remove({ username: 'Phillip' }).exec();
 
         done();
       });
   });
 
   describe('Link creation: ', function() {
-
     it('Only shortens valid urls, returning a 404 - Not found for invalid urls', function(done) {
       request(app)
         .post('/links')
         .send({
-          'url': 'definitely not a valid url'})
+          url: 'definitely not a valid url'
+        })
         .expect(404)
         .end(done);
     });
 
     describe('Shortening links:', function() {
-
       it('Responds with the short code', function(done) {
         request(app)
           .post('/links')
           .send({
-            'url': 'http://www.roflzoo.com/'})
+            url: 'http://www.roflzoo.com/'
+          })
           .expect(200)
           .expect(function(res) {
             expect(res.body.url).to.equal('http://www.roflzoo.com/');
@@ -58,14 +57,19 @@ xdescribe('', function() {
         request(app)
           .post('/links')
           .send({
-            'url': 'http://www.roflzoo.com/'})
+            url: 'http://www.roflzoo.com/'
+          })
           .expect(200)
           .expect(function(res) {
-            Link.findOne({'url': 'http://www.roflzoo.com/'})
-              .exec(function(err, link) {
-                if (err) { console.log(err); }
-                expect(link.url).to.equal('http://www.roflzoo.com/');
-              });
+            Link.findOne({ url: 'http://www.roflzoo.com/' }).exec(function(
+              err,
+              link
+            ) {
+              if (err) {
+                console.log(err);
+              }
+              expect(link.url).to.equal('http://www.roflzoo.com/');
+            });
           })
           .end(done);
       });
@@ -74,22 +78,27 @@ xdescribe('', function() {
         request(app)
           .post('/links')
           .send({
-            'url': 'http://www.roflzoo.com/'})
+            url: 'http://www.roflzoo.com/'
+          })
           .expect(200)
           .expect(function(res) {
-            Link.findOne({'url': 'http://www.roflzoo.com/'})
-              .exec(function(err, link) {
-                if (err) { console.log(err); }
-                expect(link.title).to.equal('Funny pictures of animals, funny dog pictures');
-              });
+            Link.findOne({ url: 'http://www.roflzoo.com/' }).exec(function(
+              err,
+              link
+            ) {
+              if (err) {
+                console.log(err);
+              }
+              expect(link.title).to.equal(
+                'Funny pictures of animals, funny dog pictures'
+              );
+            });
           })
           .end(done);
       });
-
     }); // 'Shortening Links'
 
     describe('With previously saved urls: ', function() {
-
       beforeEach(function(done) {
         link = new Link({
           url: 'http://www.roflzoo.com/',
@@ -108,7 +117,8 @@ xdescribe('', function() {
         request(app)
           .post('/links')
           .send({
-            'url': 'http://www.roflzoo.com/'})
+            url: 'http://www.roflzoo.com/'
+          })
           .expect(200)
           .expect(function(res) {
             var secondCode = res.body.code;
@@ -128,13 +138,10 @@ xdescribe('', function() {
           })
           .end(done);
       });
-
     }); // 'With previously saved urls'
-
   }); // 'Link creation'
 
   describe('Priviledged Access:', function() {
-
     // /*  Authentication  */
     // // TODO: xit out authentication
     it('Redirects to login page if a user tries to access the main page and is not signed in', function(done) {
@@ -166,23 +173,21 @@ xdescribe('', function() {
         })
         .end(done);
     });
-
   }); // 'Privileged Access'
 
   describe('Account Creation:', function() {
-
     it('Signup creates a new user', function(done) {
       request(app)
         .post('/signup')
         .send({
-          'username': 'Svnh',
-          'password': 'Svnh' })
+          username: 'Svnh',
+          password: 'Svnh'
+        })
         .expect(302)
         .expect(function() {
-          User.findOne({'username': 'Svnh'})
-            .exec(function(err, user) {
-              expect(user.username).to.equal('Svnh');
-            });
+          User.findOne({ username: 'Svnh' }).exec(function(err, user) {
+            expect(user.username).to.equal('Svnh');
+          });
         })
         .end(done);
     });
@@ -191,8 +196,9 @@ xdescribe('', function() {
       request(app)
         .post('/signup')
         .send({
-          'username': 'Phillip',
-          'password': 'Phillip' })
+          username: 'Phillip',
+          password: 'Phillip'
+        })
         .expect(302)
         .expect(function(res) {
           expect(res.headers.location).to.equal('/');
@@ -202,15 +208,13 @@ xdescribe('', function() {
         })
         .end(done);
     });
-
   }); // 'Account Creation'
 
   describe('Account Login:', function() {
-
     beforeEach(function(done) {
       new User({
-        'username': 'Phillip',
-        'password': 'Phillip'
+        username: 'Phillip',
+        password: 'Phillip'
       }).save(function() {
         done();
       });
@@ -220,8 +224,9 @@ xdescribe('', function() {
       request(app)
         .post('/login')
         .send({
-          'username': 'Phillip',
-          'password': 'Phillip' })
+          username: 'Phillip',
+          password: 'Phillip'
+        })
         .expect(302)
         .expect(function(res) {
           expect(res.headers.location).to.equal('/');
@@ -233,15 +238,14 @@ xdescribe('', function() {
       request(app)
         .post('/login')
         .send({
-          'username': 'Fred',
-          'password': 'Fred' })
+          username: 'Fred',
+          password: 'Fred'
+        })
         .expect(302)
         .expect(function(res) {
           expect(res.headers.location).to.equal('/login');
         })
         .end(done);
     });
-
   }); // Account Login
-
 });

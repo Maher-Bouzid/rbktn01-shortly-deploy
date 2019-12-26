@@ -16,11 +16,13 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 app.use(cookieParser('shhhh, very secret'));
-app.use(session({
-  secret: 'shhh, it\'s a secret',
-  resave: false,
-  saveUninitialized: true
-}));
+app.use(
+  session({
+    secret: "shhh, it's a secret",
+    resave: false,
+    saveUninitialized: true
+  })
+);
 
 app.get('/', util.checkUser, handler.renderIndex);
 app.get('/create', util.checkUser, handler.renderIndex);
