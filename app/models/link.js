@@ -18,6 +18,10 @@ class Link {
     return this.model.findOne({ url: this._data.url });
   }
 
+  getAll() {
+    return this.model.find({});
+  }
+
   save() {
     this._data['code'] = this.generateCode(this._data.url);
     let link = new this.model(this._data);
