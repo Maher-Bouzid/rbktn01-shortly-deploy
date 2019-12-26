@@ -60,11 +60,11 @@ db.once('open', function () {
   console.log("we're connected!")
 });
 var urls = new Schema({
-  url: String,
+  url: { type: String, unique: true },
   baseUrl: String,
   code: String,
   title: String,
-  visits: Number,
+  visits: { type: Number, default: 0 },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now }
 });
