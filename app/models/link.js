@@ -27,6 +27,10 @@ class Link {
     let link = new this.model(this._data);
     return link.save();
   }
+
+  update(callback) {
+    this.model.findOneAndUpdate({ code: this._data.code }, { $inc: { visits: 1 } }, callback);
+  }
 }
 
 module.exports = Link;
