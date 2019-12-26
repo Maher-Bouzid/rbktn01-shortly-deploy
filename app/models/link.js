@@ -31,6 +31,10 @@ class Link {
   update(callback) {
     this.model.findOneAndUpdate({ code: this._data.code }, { $inc: { visits: 1 } }, callback);
   }
+
+  static remove(obj) {
+    mongoose.model('Link', db.url).deleteOne(obj)
+  }
 }
 
 module.exports = Link;
