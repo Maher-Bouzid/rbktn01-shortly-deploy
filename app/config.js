@@ -1,8 +1,9 @@
 var path = require('path');
 const mongoose = require('mongoose');
+require('dotenv').config();
 
 var Schema = mongoose.Schema;
-var url = "mongodb+srv://root:toor@cluster0-qa2yn.mongodb.net/test";
+var url = `mongodb+srv://root:${process.env.MONGO_PASSWORD}@cluster0-qa2yn.mongodb.net/test`;
 var db = mongoose.connection;
 
 mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
