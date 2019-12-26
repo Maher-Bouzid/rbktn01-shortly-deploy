@@ -33,9 +33,16 @@ class User {
   generateHash() {
     let cipher = Promise.promisify(bcrypt.hash);
     return cipher(this._data.password, null, null).bind(this);
-    // .then(function (hash) {
-    //   this.set('password', hash);
-    // });
+  }
+
+  find() {
+    return this.model.find({ username: this._data.username });
+  }
+
+  comparePassword(attemptedPassword, actualPassword, callback) {
+    bcrypt.compare(attemptedPassword, actualPassword, function (err, isMatch) {
+      callback(isMatch);
+    });
   }
 
   save() {
